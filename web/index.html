@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inside PC</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .scr { display:none; padding:16px 16px 32px; animation: fi .2s ease; }
+        .scr.on { display:block; }
+        @keyframes fi { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        .hdr { margin-bottom:20px; }
+        .hdr-icon { width:32px; height:32px; color:var(--tg-theme-button-color,#3390ec); margin-bottom:8px; }
+        .title { font-size:22px; font-weight:700; }
+        .sub { font-size:14px; color:var(--tg-theme-hint-color,#999); margin-top:4px; }
+
+        .back {
+            display:inline-flex; align-items:center; gap:4px; background:none; border:none;
+            color:var(--tg-theme-link-color,#3390ec); font-size:14px; font-weight:500;
+            cursor:pointer; padding:0; margin-bottom:12px;
+        }
+        .back svg { width:18px; height:18px; }
+
+        .cards { display:flex; flex-direction:column; gap:8px; }
+
+        .card {
+            display:flex; align-items:center; gap:12px; width:100%; padding:14px;
+            background:var(--tg-theme-secondary-bg-color,#f0f0f0);
+            border:none; border-radius:12px; cursor:pointer; text-align:left;
+        }
+        .card:active { opacity:.85; }
+
+        .ci {
+            flex-shrink:0; width:40px; height:40px; display:flex;
+            align-items:center; justify-content:center;
+            background:var(--tg-theme-button-color,#3390ec); border-radius:10px;
+        }
+        .ci svg { width:22px; height:22px; color:var(--tg-theme-button-text-color,#fff); }
+
+        .cc { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .ct { font-size:15px; font-weight:600; }
+        .cd { font-size:12px; color:var(--tg-theme-hint-color,#999); }
+        .cp { font-size:13px; font-weight:600; color:var(--tg-theme-link-color,#3390ec); margin-top:2px; }
+
+        .arr { flex-shrink:0; width:18px; height:18px; color:var(--tg-theme-hint-color,#999); }
+
+        .fg { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+        .fl {
+            display:flex; align-items:center; gap:6px;
+            font-size:13px; font-weight:600; color:var(--tg-theme-hint-color,#999);
+            text-transform:uppercase; letter-spacing:.3px;
+        }
+        .fl svg { width:16px; height:16px; }
+
+        .fi {
+            width:100%; padding:12px 14px;
+            background:var(--tg-theme-secondary-bg-color,#f0f0f0);
+            border:none; border-radius:10px; font-size:15px;
+            color:var(--tg-theme-text-color,#000); outline:none;
+        }
+        .fi:focus { box-shadow:0 0 0 2px var(--tg-theme-button-color,#3390ec); }
+        .fi::placeholder { color:var(--tg-theme-hint-color,#999); }
+        textarea.fi { resize:vertical; font-family:inherit; }
+
+        .btn {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            width:100%; padding:14px;
+            background:var(--tg-theme-button-color,#3390ec);
+            color:var(--tg-theme-button-text-color,#fff);
+            border:none; border-radius:10px; font-size:15px; font-weight:600;
+            cursor:pointer; margin-top:8px;
+        }
+        .btn:active { opacity:.85; }
+        .btn:disabled { opacity:.4; cursor:not-allowed; }
+        .btn svg { width:18px; height:18px; }
+
+        .pay-card {
+            background:var(--tg-theme-secondary-bg-color,#f0f0f0);
+            border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;
+        }
+        .pr { display:flex; justify-content:space-between; align-items:center; }
+        .pl { font-size:13px; color:var(--tg-theme-hint-color,#999); }
+        .pv { font-size:14px; font-weight:600; }
+        .pv.copy { display:flex; align-items:center; gap:6px; cursor:pointer; }
+        .pv.copy svg { width:14px; height:14px; color:var(--tg-theme-link-color,#3390ec); }
+
+        .notice {
+            display:flex; align-items:flex-start; gap:8px; padding:12px;
+            background:var(--tg-theme-secondary-bg-color,#f0f0f0);
+            border-radius:10px; border-left:3px solid var(--tg-theme-button-color,#3390ec);
+            margin:14px 0;
+        }
+        .notice svg { flex-shrink:0; width:18px; height:18px; color:var(--tg-theme-button-color,#3390ec); margin-top:1px; }
+        .notice span { font-size:13px; color:var(--tg-theme-hint-color,#999); line-height:1.4; }
+
+        .upload {
+            width:100%; min-height:120px; display:flex; align-items:center; justify-content:center;
+            background:var(--tg-theme-secondary-bg-color,#f0f0f0);
+            border:2px dashed var(--tg-theme-hint-color,#ccc);
+            border-radius:12px; cursor:pointer; overflow:hidden; margin-bottom:14px;
+        }
+        .upload-ph { display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--tg-theme-hint-color,#999); font-size:13px; }
+        .upload-ph svg { width:32px; height:32px; }
+        .upload img { width:100%; max-height:250px; object-fit:cover; border-radius:10px; }
+        .hide { display:none!important; }
+
+        .success {
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            min-height:70vh; text-align:center; gap:16px; padding:32px 16px;
+        }
+        .sok {
+            width:64px; height:64px; display:flex; align-items:center; justify-content:center;
+            background:var(--tg-theme-button-color,#3390ec); border-radius:50%;
+        }
+        .sok svg { width:32px; height:32px; color:var(--tg-theme-button-text-color,#fff); }
+        .st { font-size:22px; font-weight:700; }
+        .stx { font-size:14px; color:var(--tg-theme-hint-color,#999); line-height:1.5; max-width:280px; }
+    </style>
+</head>
+<body>
+
+<!-- ===== 1. ВЫБОР УСЛУГИ ===== -->
+<div id="s1" class="scr on">
+    <div class="hdr">
+        <svg class="hdr-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <h1 class="title">Inside PC</h1>
+        <p class="sub">Выберите услугу</p>
+    </div>
+    <div class="cards">
+        <button class="card" onclick="pick('consultation')">
+            <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="cc"><span class="ct">Консультация</span><span class="cd">Оценка сборки / помощь с выбором</span><span class="cp">15 BYN / 450 RUB</span></div>
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="card" onclick="pick('build')">
+            <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="15" x2="4" y2="15"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="15" x2="22" y2="15"/></svg></div>
+            <div class="cc"><span class="ct">Сборка ПК</span><span class="cd">Полная сборка компьютера</span><span class="cp">50 BYN / 1500 RUB</span></div>
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="card" onclick="pick('upgrade')">
+            <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div class="cc"><span class="ct">Апгрейд ПК</span><span class="cd">Модернизация компонентов</span><span class="cp">30 BYN / 900 RUB</span></div>
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- ===== 2. ЕСТЬ ЛИ КОМПЛЕКТУЮЩИЕ ===== -->
+<div id="s2" class="scr">
+    <div class="hdr">
+        <button class="back" onclick="go('s1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button>
+        <h1 class="title" id="s2t">Консультация</h1>
+        <p class="sub">У вас есть список комплектующих?</p>
+    </div>
+    <div class="cards">
+        <button class="card" onclick="pickParts(true)">
+            <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="cc"><span class="ct">Да, есть список</span><span class="cd">Заполню по категориям</span></div>
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="card" onclick="pickParts(false)">
+            <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div class="cc"><span class="ct">Нет, нужна помощь</span><span class="cd">Менеджер подберёт</span></div>
+            <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- ===== 3. ФОРМА КОМПЛЕКТУЮЩИХ ===== -->
+<div id="s3" class="scr">
+    <div class="hdr">
+        <button class="back" onclick="go('s2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button>
+        <h1 class="title">Комплектующие</h1>
+        <p class="sub">Заполните что знаете</p>
+    </div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg>Процессор</label><input class="fi" id="p-cpu" placeholder="Ryzen 5 5600X"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>Видеокарта</label><input class="fi" id="p-gpu" placeholder="RTX 4060 Ti"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Мат. плата</label><input class="fi" id="p-mb" placeholder="MSI B550 Tomahawk"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>RAM</label><input class="fi" id="p-ram" placeholder="2x16GB DDR4 3600"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/></svg>Накопитель</label><input class="fi" id="p-stor" placeholder="Samsung 980 Pro 1TB"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Блок питания</label><input class="fi" id="p-psu" placeholder="Corsair RM750x"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/></svg>Корпус</label><input class="fi" id="p-case" placeholder="NZXT H510"></div>
+    <div class="fg"><label class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Охлаждение</label><input class="fi" id="p-cool" placeholder="DeepCool AK400"></div>
+    <div class="fg"><label class="fl">Комментарий</label><textarea class="fi" id="p-desc" rows="3" placeholder="Пожелания..."></textarea></div>
+    <button class="btn" onclick="toPay()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>К оплате</button>
+</div>
+
+<!-- ===== 3.5 БЕЗ КОМПЛЕКТУЮЩИХ ===== -->
+<div id="s3b" class="scr">
+    <div class="hdr">
+        <button class="back" onclick="go('s2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button>
+        <h1 class="title">Описание задачи</h1>
+        <p class="sub">Расскажите, что нужно</p>
+    </div>
+    <div class="fg"><label class="fl">Ваша задача</label><textarea class="fi" id="np-desc" rows="5" placeholder="Нужна сборка для игр, бюджет 3000 BYN..."></textarea></div>
+    <button class="btn" onclick="toPay()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>К оплате</button>
+</div>
+
+<!-- ===== 4. ОПЛАТА ===== -->
+<div id="s4" class="scr">
+    <div class="hdr">
+        <button class="back" onclick="backFromPay()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button>
+        <h1 class="title">Оплата</h1>
+        <p class="sub" id="s4p">15 BYN / 450 RUB</p>
+    </div>
+    <div class="pay-card">
+        <div class="pr"><span class="pl">Банк</span><span class="pv">Belarusbank</span></div>
+        <div class="pr"><span class="pl">Карта</span><span class="pv copy" onclick="copyCard()">1234 5678 9012 3456<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span></div>
+        <div class="pr"><span class="pl">Получатель</span><span class="pv">IVANOV IVAN</span></div>
+    </div>
+    <div class="notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Переведите сумму и загрузите скриншот / фото чека</span>
+    </div>
+    <div class="upload" onclick="document.getElementById('pf').click()">
+        <input type="file" id="pf" accept="image/*" onchange="onPhoto(event)" hidden>
+        <div id="uph" class="upload-ph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Нажмите для загрузки</span>
+        </div>
+        <img id="upv" class="hide" alt="">
+    </div>
+    <button class="btn" id="bsub" onclick="submit()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Отправить заявку
+    </button>
+</div>
+
+<!-- ===== 5. УСПЕХ ===== -->
+<div id="s5" class="scr">
+    <div class="success">
+        <div class="sok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h2 class="st">Заявка отправлена</h2>
+        <p class="stx" id="s5id">Заказ #1</p>
+        <p class="stx">Менеджер проверит оплату и свяжется с вами в боте Inside PC.</p>
+        <button class="btn" onclick="Telegram.WebApp.close()">Закрыть</button>
+    </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+let S = { svc: null, hasParts: null, parts: null, desc: '', photoOk: false };
+
+const P = {
+    consultation: { byn:15, rub:450, name:'Консультация' },
+    build:        { byn:50, rub:1500, name:'Сборка ПК' },
+    upgrade:      { byn:30, rub:900, name:'Апгрейд ПК' },
+};
+
+function go(id) {
+    document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+    id === 's1' ? tg.BackButton.hide() : tg.BackButton.show();
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+}
+
+function pick(svc) {
+    S.svc = svc;
+    document.getElementById('s2t').textContent = P[svc].name;
+    go('s2');
+}
+
+function pickParts(has) {
+    S.hasParts = has;
+    go(has ? 's3' : 's3b');
+}
+
+function toPay() {
+    if (S.hasParts) {
+        S.parts = {
+            'Процессор': document.getElementById('p-cpu').value.trim(),
+            'Видеокарта': document.getElementById('p-gpu').value.trim(),
+            'Мат. плата': document.getElementById('p-mb').value.trim(),
+            'RAM': document.getElementById('p-ram').value.trim(),
+            'Накопитель': document.getElementById('p-stor').value.trim(),
+            'БП': document.getElementById('p-psu').value.trim(),
+            'Корпус': document.getElementById('p-case').value.trim(),
+            'Охлаждение': document.getElementById('p-cool').value.trim(),
+        };
+        S.desc = document.getElementById('p-desc').value.trim();
+    } else {
+        S.parts = null;
+        S.desc = document.getElementById('np-desc').value.trim();
+    }
+    const p = P[S.svc];
+    document.getElementById('s4p').textContent = `${p.byn} BYN / ${p.rub} RUB`;
+    go('s4');
+}
+
+function backFromPay() { go(S.hasParts ? 's3' : 's3b'); }
+
+function copyCard() {
+    navigator.clipboard.writeText('1234567890123456').then(() => {
+        tg.showAlert('Номер карты скопирован');
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    });
+}
+
+function onPhoto(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.size > 5*1024*1024) { tg.showAlert('Макс. 5 МБ'); return; }
+    const r = new FileReader();
+    r.onload = ev => {
+        document.getElementById('upv').src = ev.target.result;
+        document.getElementById('upv').classList.remove('hide');
+        document.getElementById('uph').classList.add('hide');
+        S.photoOk = true;
+        document.getElementById('bsub').disabled = false;
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    };
+    r.readAsDataURL(f);
+}
+
+async function submit() {
+    const btn = document.getElementById('bsub');
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+
+    const u = tg.initDataUnsafe?.user || {};
+
+    try {
+        const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: u.id || 0,
+                username: u.username || '',
+                full_name: [u.first_name, u.last_name].filter(Boolean).join(' '),
+                service_type: S.svc,
+                has_parts_list: S.hasParts,
+                parts_data: S.parts,
+                description: S.desc,
+            })
+        });
+
+        if (!res.ok) throw new Error((await res.json()).detail || 'Ошибка');
+        const data = await res.json();
+
+        document.getElementById('s5id').textContent = `Заказ #${data.id}`;
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        go('s5');
+
+        try { tg.sendData(JSON.stringify({ action:'order_created', order_id:data.id })); } catch(e) {}
+
+    } catch(err) {
+        tg.showAlert('Ошибка: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Отправить заявку';
+    }
+}
+
+tg.BackButton.onClick(() => {
+    const a = document.querySelector('.scr.on');
+    if (!a) return;
+    const map = { s2:'s1', s3:'s2', s3b:'s2', s4: S.hasParts?'s3':'s3b', s5:'s1' };
+    go(map[a.id] || 's1');
+});
+</script>
+
+</body>
+</html>
