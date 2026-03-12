@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inside PC — Заказ</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--tg-theme-bg-color,#0f0f0f);color:var(--tg-theme-text-color,#fff);padding:16px}
+        .title{font-size:22px;font-weight:800;margin-bottom:16px}
+        .title span{color:var(--tg-theme-button-color,#3390ec)}
+        .block{background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-radius:14px;padding:16px;margin-bottom:12px}
+        .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+        .row:last-child{border:none}
+        .label{font-size:12px;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.5px}
+        .value{font-size:14px;font-weight:600;text-align:right;max-width:60%;word-break:break-word}
+        .section{font-size:13px;font-weight:700;color:var(--tg-theme-button-color,#3390ec);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+        .badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600}
+        .badge-pending{background:rgba(255,170,0,.15);color:#ffaa00}
+        .badge-confirmed{background:rgba(0,200,83,.15);color:#00c853}
+        .badge-progress{background:rgba(51,144,236,.15);color:#3390ec}
+        .badge-done{background:rgba(0,200,83,.15);color:#00c853}
+        .badge-cancel{background:rgba(255,59,48,.15);color:#ff3b30}
+        .loading{text-align:center;padding:40px;color:var(--tg-theme-hint-color)}
+    </style>
+</head>
+<body>
+    <div class="title">Inside <span>PC</span></div>
+    <div id="content"><p class="loading">Загрузка...</p></div>
+
+    <script>
+        const tg=window.Telegram.WebApp;tg.ready();tg.expand();
+
+        const params=new URLSearchParams(window.location.search);
+        const oid=params.get('order_id');
+
+        async function load(){
+            if(!oid){document.getElementById('content').innerHTML='<p>Нет order_id</p>';return;}
+            try{
+                const r=await fetch(`/api/order/${oid}`);
+                if(!r.ok)throw new Error('Не найден');
+                const o=await r.json();
+
+                let bc='badge-pending';
+                if(o.status==='payment_confirmed')bc='badge-confirmed';
+                else if(o.status==='in_progress')bc='badge-progress';
+                else if(o.status==='completed')bc='badge-done';
+                else if(o.status==='cancelled')bc='badge-cancel';
+
+                let html=`
+                    <div class="block">
+                        <div class="row"><span class="label">Заказ</span><span class="value">#${o.id}</span></div>
+                        <div class="row"><span class="label">Статус</span><span class="value"><span class="badge ${bc}">${o.status_text}</span></span></div>
+                        <div class="row"><span class="label">Дата</span><span class="value">${o.date}</span></div>
+                    </div>
+
+                    <div class="section">Клиент</div>
+                    <div class="block">
+                        <div class="row"><span class="label">ID</span><span class="value">${o.user_id}</span></div>
+                        <div class="row"><span class="label">Username</span><span class="value">${o.username?'@'+o.username:'—'}</span></div>
+                        <div class="row"><span class="label">Имя</span><span class="value">${o.full_name||'—'}</span></div>
+                    </div>
+
+                    <div class="section">Услуга</div>
+                    <div class="block">
+                        <div class="row"><span class="label">Тип</span><span class="value">${o.service}</span></div>
+                        <div class="row"><span class="label">Стоимость</span><span class="value">${o.price_byn} BYN / ${o.price_rub} RUB</span></div>
+                    </div>
+                `;
+
+                if(o.has_parts&&o.parts){
+                    html+=`<div class="section">Комплектующие</div><div class="block">`;
+                    for(const[k,v]of Object.entries(o.parts)){
+                        if(v)html+=`<div class="row"><span class="label">${k}</span><span class="value">${v}</span></div>`;
+                    }
+                    html+=`</div>`;
+                }
+
+                if(o.description){
+                    html+=`<div class="section">Описание</div><div class="block"><p style="font-size:14px;line-height:1.5">${o.description}</p></div>`;
+                }
+
+                document.getElementById('content').innerHTML=html;
+            }catch(e){
+                document.getElementById('content').innerHTML=`<p style="color:red">${e.message}</p>`;
+            }
+        }
+        load();
+    </script>
+</body>
+</html>
