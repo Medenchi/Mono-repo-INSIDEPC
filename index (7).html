@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Inside PC</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--tg-theme-bg-color,#0f0f0f);color:var(--tg-theme-text-color,#fff);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:68px}
+.scr{display:none;padding:16px 16px 32px;animation:fi .25s ease}.scr.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hdr{margin-bottom:24px;text-align:center;padding-top:8px}
+.logo{font-size:28px;font-weight:800;letter-spacing:-.5px}.logo span{color:var(--tg-theme-button-color,#3390ec)}
+.sub{font-size:13px;color:var(--tg-theme-hint-color,#888);margin-top:4px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-top:1px solid rgba(255,255,255,.06);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;cursor:pointer;border:none;background:none;color:var(--tg-theme-hint-color,#888);transition:color .2s}
+.nav-item.on{color:var(--tg-theme-button-color,#3390ec)}
+.nav-item svg{width:22px;height:22px}.nav-item span{font-size:10px;font-weight:600}
+.profile-hdr{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0 20px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--tg-theme-button-color,#3390ec);display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--tg-theme-button-color,#3390ec)}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-avatar svg{width:36px;height:36px;color:var(--tg-theme-button-text-color,#fff)}
+.profile-name{font-size:20px;font-weight:700}
+.profile-username{font-size:14px;color:var(--tg-theme-hint-color,#888)}
+.profile-stats{display:flex;gap:16px;margin-top:4px}
+.profile-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.profile-stat-num{font-size:18px;font-weight:700;color:var(--tg-theme-button-color,#3390ec)}
+.profile-stat-label{font-size:11px;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.5px}
+.section-title{font-size:14px;font-weight:700;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding:0 4px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{display:flex;align-items:center;gap:14px;width:100%;padding:16px;background:var(--tg-theme-secondary-bg-color,#1a1a1a);border:none;border-radius:14px;cursor:pointer;text-align:left;color:inherit;transition:transform .15s}.card:active{transform:scale(.98)}
+.ci{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px}.ci svg{width:22px;height:22px;color:#fff}
+.ci-blue{background:#3390ec}.ci-green{background:#00c853}.ci-purple{background:#9b59b6}.ci-orange{background:#ff9500}.ci-teal{background:#00bcd4}
+.cc{flex:1;display:flex;flex-direction:column;gap:3px}.ct{font-size:15px;font-weight:600}.cd{font-size:12px;color:var(--tg-theme-hint-color,#888)}.cp{font-size:13px;font-weight:700;color:var(--tg-theme-button-color,#3390ec)}.cp-purple{color:#9b59b6}
+.arr{flex-shrink:0;width:18px;height:18px;color:var(--tg-theme-hint-color,#555)}
+.back{display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--tg-theme-link-color,#3390ec);font-size:14px;font-weight:500;cursor:pointer;padding:0;margin-bottom:16px}.back svg{width:18px;height:18px}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-pending{background:rgba(255,170,0,.15);color:#ffaa00}.badge-quote{background:rgba(155,89,182,.15);color:#9b59b6}.badge-confirmed{background:rgba(0,200,83,.15);color:#00c853}.badge-progress{background:rgba(51,144,236,.15);color:#3390ec}.badge-done{background:rgba(0,200,83,.15);color:#00c853}.badge-cancel{background:rgba(255,59,48,.15);color:#ff3b30}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.fl{font-size:12px;font-weight:600;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:13px 16px;background:var(--tg-theme-secondary-bg-color,#1a1a1a);border:1px solid rgba(255,255,255,.08);border-radius:12px;font-size:15px;color:var(--tg-theme-text-color,#fff);outline:none}
+.fi:focus{border-color:var(--tg-theme-button-color,#3390ec)}.fi::placeholder{color:var(--tg-theme-hint-color,#555)}
+textarea.fi{resize:vertical;font-family:inherit}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;padding:15px;background:var(--tg-theme-button-color,#3390ec);color:var(--tg-theme-button-text-color,#fff);border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .15s}.btn:active{opacity:.85}.btn:disabled{opacity:.35}
+.btn-outline{background:transparent;border:1.5px solid var(--tg-theme-button-color,#3390ec);color:var(--tg-theme-button-color,#3390ec)}
+.btn-green{background:#00c853}.btn-purple{background:#9b59b6}
+.notice{display:flex;align-items:flex-start;gap:10px;padding:14px;background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-radius:12px;border-left:3px solid;margin:16px 0}
+.notice svg{flex-shrink:0;width:18px;height:18px;margin-top:2px}.notice span{font-size:13px;color:var(--tg-theme-hint-color,#888);line-height:1.5}
+.notice-purple{border-color:#9b59b6}.notice-purple svg{color:#9b59b6}
+.notice-blue{border-color:#3390ec}.notice-blue svg{color:#3390ec}
+.summary{background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-radius:14px;padding:16px;margin:16px 0}
+.sum-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}.sum-label{color:var(--tg-theme-hint-color,#888)}.sum-val{font-weight:600}
+.sum-row.total{border-top:1px solid rgba(255,255,255,.08);margin-top:6px;padding-top:12px;font-size:16px}.sum-row.total .sum-val{color:var(--tg-theme-button-color,#3390ec)}
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;gap:16px;padding:32px 16px}
+.sok{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:50%}.sok svg{width:36px;height:36px;color:#fff}
+.sok-green{background:#00c853}.sok-purple{background:#9b59b6}
+.st{font-size:24px;font-weight:800}.stx{font-size:14px;color:var(--tg-theme-hint-color,#888);line-height:1.5;max-width:300px}
+.order-card{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-radius:12px;margin-bottom:8px}
+.order-left{display:flex;flex-direction:column;gap:3px}.order-id{font-size:13px;font-weight:700;color:var(--tg-theme-button-color,#3390ec)}.order-svc{font-size:14px;font-weight:600}.order-date{font-size:11px;color:var(--tg-theme-hint-color,#666)}
+.order-right{text-align:right}.order-price{font-size:13px;font-weight:600;margin-top:4px}
+
+/* ПОРТФОЛИО */
+.pf-grid{display:flex;flex-direction:column;gap:12px}
+.pf-card{background:var(--tg-theme-secondary-bg-color,#1a1a1a);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .15s}.pf-card:active{transform:scale(.98)}
+.pf-cover{position:relative;width:100%;height:220px;background:#111;overflow:hidden}
+.pf-cover img{width:100%;height:100%;object-fit:cover}
+.pf-cover-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--tg-theme-hint-color,#555)}
+.pf-cover-empty svg{width:40px;height:40px;opacity:.3}
+.pf-cover-empty span{font-size:12px}
+.pf-badge-count{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:600;backdrop-filter:blur(4px)}
+.pf-body{padding:14px}
+.pf-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.pf-specs{font-size:12px;color:var(--tg-theme-hint-color,#888);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-price{font-size:14px;font-weight:700;color:var(--tg-theme-button-color,#3390ec)}
+.pf-muted{color:var(--tg-theme-hint-color,#666);font-style:italic}
+
+/* ДЕТАЛИ */
+.pf-detail{padding:0 0 20px}
+.pf-slider{position:relative;width:100%;height:280px;overflow:hidden;background:#111;border-radius:0 0 16px 16px;touch-action:pan-y}
+.pf-slider-track{display:flex;height:100%;transition:transform .3s ease}
+.pf-slider-track img{width:100%;height:100%;object-fit:cover;flex-shrink:0}
+.pf-slider-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--tg-theme-hint-color,#555)}
+.pf-slider-empty svg{width:48px;height:48px;opacity:.3}
+.pf-dots{display:flex;justify-content:center;gap:6px;padding:12px 0}
+.pf-dot{width:8px;height:8px;border-radius:50%;background:var(--tg-theme-hint-color,#555);transition:all .2s;cursor:pointer}
+.pf-dot.on{background:var(--tg-theme-button-color,#3390ec);width:20px;border-radius:4px}
+.pf-info{padding:0 16px}
+.pf-detail-title{font-size:22px;font-weight:800;margin:4px 0 8px}
+.pf-detail-specs{font-size:14px;color:var(--tg-theme-hint-color,#888);margin-bottom:10px;line-height:1.6;white-space:pre-line}
+.pf-detail-desc{font-size:14px;line-height:1.6;margin-bottom:12px;white-space:pre-line}
+.pf-detail-price{font-size:18px;font-weight:700;color:var(--tg-theme-button-color,#3390ec)}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 20px;gap:16px}
+.empty svg{width:64px;height:64px;color:var(--tg-theme-hint-color,#555);opacity:.4}
+.empty p{font-size:15px;color:var(--tg-theme-hint-color,#888);max-width:260px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="bottom-nav" id="bnav">
+    <button class="nav-item on" id="nav-order" onclick="navTo('order')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/></svg>
+        <span>Заказ</span>
+    </button>
+    <button class="nav-item" id="nav-portfolio" onclick="navTo('portfolio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Портфолио</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="navTo('profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Профиль</span>
+    </button>
+</div>
+
+<!-- ГЛАВНАЯ -->
+<div id="s-main" class="scr on">
+    <div class="hdr"><div class="logo">Inside <span>PC</span></div><p class="sub">Сборка и обслуживание компьютеров</p></div>
+    <div class="cards">
+        <button class="card" onclick="pick('consultation')"><div class="ci ci-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="cc"><span class="ct">Консультация</span><span class="cd">Оценка сборки, помощь с выбором</span><span class="cp">10 BYN / 270 RUB</span></div><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="card" onclick="pick('build')"><div class="ci ci-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg></div><div class="cc"><span class="ct">Сборка ПК</span><span class="cd">Полная сборка под ваши задачи</span><span class="cp">100 BYN / 2700 RUB</span></div><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="card" onclick="pick('upgrade')"><div class="ci ci-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="cc"><span class="ct">Апгрейд ПК</span><span class="cd">Замена и улучшение компонентов</span><span class="cp cp-purple">от 30 BYN / от 800 RUB</span></div><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+</div>
+
+<!-- ПОРТФОЛИО -->
+<div id="s-portfolio" class="scr">
+    <div class="hdr"><div class="logo">Порт<span>фолио</span></div><p class="sub">Наши работы</p></div>
+    <div id="pf-content"></div>
+</div>
+
+<!-- ПОРТФОЛИО ДЕТАЛИ -->
+<div id="s-pf-detail" class="scr">
+    <button class="back" onclick="go('s-portfolio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button>
+    <div id="pf-detail-content"></div>
+</div>
+
+<!-- ПРОФИЛЬ -->
+<div id="s-profile" class="scr">
+    <div class="profile-hdr">
+        <div class="profile-avatar" id="prof-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="profile-name" id="prof-name">Пользователь</div>
+        <div class="profile-username" id="prof-uname"></div>
+        <div class="profile-stats">
+            <div class="profile-stat"><div class="profile-stat-num" id="prof-total">0</div><div class="profile-stat-label">Заказов</div></div>
+            <div class="profile-stat"><div class="profile-stat-num" id="prof-active">0</div><div class="profile-stat-label">Активных</div></div>
+            <div class="profile-stat"><div class="profile-stat-num" id="prof-done">0</div><div class="profile-stat-label">Завершено</div></div>
+        </div>
+    </div>
+    <div class="section-title">История заказов</div>
+    <div id="prof-orders"></div>
+</div>
+
+<!-- ФОРМЫ -->
+<div id="f-consultation" class="scr"><button class="back" onclick="go('s-main')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button><div class="hdr"><div class="logo">Консультация</div><p class="sub">Опишите вопрос</p></div><div class="fg"><label class="fl">Вопрос</label><textarea class="fi" id="con-desc" rows="5" placeholder="Бюджет, задачи..."></textarea></div><div class="summary"><div class="sum-row total"><span class="sum-label">К оплате</span><span class="sum-val">10 BYN / 270 RUB</span></div></div><div class="notice notice-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Реквизиты придут в бот.</span></div><button class="btn" id="btn-con" onclick="submit('consultation')">Оформить</button></div>
+<div id="f-build-ask" class="scr"><button class="back" onclick="go('s-main')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button><div class="hdr"><div class="logo">Сборка ПК</div><p class="sub">Есть комплектующие?</p></div><div class="cards"><button class="card" onclick="buildParts(true)"><div class="ci ci-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="cc"><span class="ct">Да</span><span class="cd">Заполню список</span></div><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button><button class="card" onclick="buildParts(false)"><div class="ci ci-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="cc"><span class="ct">Нет</span><span class="cd">Подберём вместе</span></div><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></div></div>
+<div id="f-build-parts" class="scr"><button class="back" onclick="go('f-build-ask')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button><div class="hdr"><div class="logo">Комплектующие</div></div><div class="fg"><label class="fl">CPU</label><input class="fi" id="b-cpu" placeholder="Ryzen 5 5600X"></div><div class="fg"><label class="fl">GPU</label><input class="fi" id="b-gpu" placeholder="RTX 4060 Ti"></div><div class="fg"><label class="fl">Мат. плата</label><input class="fi" id="b-mb" placeholder="MSI B550"></div><div class="fg"><label class="fl">RAM</label><input class="fi" id="b-ram" placeholder="2x16GB DDR4"></div><div class="fg"><label class="fl">SSD</label><input class="fi" id="b-stor" placeholder="Samsung 980 1TB"></div><div class="fg"><label class="fl">БП</label><input class="fi" id="b-psu" placeholder="Corsair RM750x"></div><div class="fg"><label class="fl">Корпус</label><input class="fi" id="b-case" placeholder="NZXT H510"></div><div class="fg"><label class="fl">Охлаждение</label><input class="fi" id="b-cool" placeholder="DeepCool AK400"></div><div class="fg"><label class="fl">Пожелания</label><textarea class="fi" id="b-desc" rows="3"></textarea></div><div class="summary"><div class="sum-row total"><span class="sum-label">Сборка</span><span class="sum-val">100 BYN / 2700 RUB</span></div></div><button class="btn" id="btn-build-p" onclick="submit('build')">Оформить</button></div>
+<div id="f-build-desc" class="scr"><button class="back" onclick="go('f-build-ask')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button><div class="hdr"><div class="logo">Сборка ПК</div><p class="sub">Опишите задачи</p></div><div class="fg"><label class="fl">Задачи и бюджет</label><textarea class="fi" id="b-nodesc" rows="5" placeholder="ПК для игр, бюджет 3000 BYN..."></textarea></div><div class="summary"><div class="sum-row total"><span class="sum-label">Сборка</span><span class="sum-val">100 BYN / 2700 RUB</span></div></div><button class="btn" id="btn-build-d" onclick="submit('build')">Оформить</button></div>
+<div id="f-upgrade" class="scr"><button class="back" onclick="go('s-main')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Назад</button><div class="hdr"><div class="logo">Апгрейд ПК</div><p class="sub">Опишите ПК и пожелания</p></div><div class="fg"><label class="fl">Текущая конфигурация</label><textarea class="fi" id="u-current" rows="4" placeholder="CPU: ...&#10;GPU: ..."></textarea></div><div class="fg"><label class="fl">Что улучшить</label><textarea class="fi" id="u-want" rows="4" placeholder="Заменить видеокарту, добавить SSD..."></textarea></div><div class="notice notice-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Оплата не нужна сейчас. Менеджер пришлёт цену в бот.</span></div><button class="btn btn-purple" id="btn-upg" onclick="submit('upgrade')">Отправить на оценку</button></div>
+<div id="s-ok" class="scr"><div class="success"><div class="sok sok-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><h2 class="st">Заявка оформлена</h2><p class="stx" id="ok-id"></p><p class="stx">Реквизиты отправлены в бот.</p><button class="btn btn-green" onclick="goToPay()">Перейти к оплате</button></div></div>
+<div id="s-okq" class="scr"><div class="success"><div class="sok sok-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><h2 class="st">Заявка отправлена</h2><p class="stx" id="okq-id"></p><p class="stx">Менеджер пришлёт цену в бот.</p><button class="btn btn-outline" onclick="Telegram.WebApp.close()">Закрыть</button></div></div>
+
+<script>
+const tg=window.Telegram.WebApp;tg.ready();tg.expand();
+let ST={svc:null,hasParts:null},_dl='';
+const SAD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
+
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');const t=['s-main','s-profile','s-portfolio'].includes(id);if(t)tg.BackButton.hide();else tg.BackButton.show();document.getElementById('bnav').style.display=t?'flex':'none';document.body.style.paddingBottom=t?'68px':'0';window.scrollTo(0,0);if(tg.HapticFeedback)tg.HapticFeedback.impactOccurred('light')}
+function navTo(t){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));document.getElementById('nav-'+t).classList.add('on');if(t==='order')go('s-main');else if(t==='portfolio'){loadPortfolio();go('s-portfolio')}else{loadProfile();go('s-profile')}}
+
+// ===== ПОРТФОЛИО =====
+let pfCache={};
+
+async function getPhotoUrl(pid,fid){
+    const key=pid+'_'+fid;
+    if(pfCache[key])return pfCache[key];
+    try{
+        const r=await fetch('/api/portfolio/'+pid+'/photo/'+fid);
+        const d=await r.json();
+        pfCache[key]=d.url;
+        return d.url;
+    }catch(e){return null}
+}
+
+async function loadPortfolio(){
+    const el=document.getElementById('pf-content');
+    el.innerHTML='<p style="text-align:center;color:var(--tg-theme-hint-color)">Загрузка...</p>';
+    try{
+        const r=await fetch('/api/portfolio');
+        const items=await r.json();
+        if(!items.length){
+            el.innerHTML='<div class="empty">'+SAD+'<p>Скоро здесь что-нибудь появится!</p></div>';
+            return;
+        }
+        let html='<div class="pf-grid">';
+        for(const item of items){
+            const hasPhoto=item.photos&&item.photos.length>0;
+            let coverHtml='';
+            if(hasPhoto){
+                const url=await getPhotoUrl(item.id,item.photos[0]);
+                if(url){
+                    coverHtml='<img src="'+url+'" alt="" loading="lazy">';
+                    if(item.photos.length>1)coverHtml+='<div class="pf-badge-count">'+item.photos.length+' фото</div>';
+                }else{
+                    coverHtml='<div class="pf-cover-empty">'+SAD+'<span>Фото не загрузилось</span></div>';
+                }
+            }else{
+                coverHtml='<div class="pf-cover-empty">'+SAD+'<span>Фото пока нет</span></div>';
+            }
+            const title=item.title&&item.title.trim()?item.title:'Неизвестно';
+            const specs=item.specs&&item.specs.trim()?item.specs:'';
+            const price=item.price_byn>0?item.price_byn+' BYN / '+item.price_rub+' RUB':'Бесценно!';
+            const priceClass=item.price_byn>0?'pf-price':'pf-price pf-muted';
+            html+='<div class="pf-card" onclick="openPF('+item.id+')">';
+            html+='<div class="pf-cover">'+coverHtml+'</div>';
+            html+='<div class="pf-body">';
+            html+='<div class="pf-title">'+title+'</div>';
+            if(specs)html+='<div class="pf-specs">'+specs+'</div>';
+            html+='<div class="'+priceClass+'">'+price+'</div>';
+            html+='</div></div>';
+        }
+        html+='</div>';
+        el.innerHTML=html;
+    }catch(e){el.innerHTML='<div class="empty">'+SAD+'<p>Ошибка загрузки</p></div>';}
+}
+
+let sliderIdx=0,sliderMax=0,touchStartX=0;
+
+async function openPF(pid){
+    const el=document.getElementById('pf-detail-content');
+    el.innerHTML='<p style="text-align:center;color:var(--tg-theme-hint-color);padding:40px">Загрузка...</p>';
+    go('s-pf-detail');
+    try{
+        const r=await fetch('/api/portfolio/'+pid);
+        const item=await r.json();
+        let html='<div class="pf-detail">';
+
+        // СЛАЙДЕР
+        if(item.photos&&item.photos.length>0){
+            const urls=[];
+            for(const fid of item.photos){
+                const url=await getPhotoUrl(pid,fid);
+                if(url)urls.push(url);
+            }
+            if(urls.length>0){
+                sliderIdx=0;sliderMax=urls.length-1;
+                html+='<div class="pf-slider" id="pf-slider" ontouchstart="tsStart(event)" ontouchend="tsEnd(event)">';
+                html+='<div class="pf-slider-track" id="pf-track">';
+                urls.forEach(u=>{html+='<img src="'+u+'" alt="" loading="lazy">'});
+                html+='</div></div>';
+                if(urls.length>1){
+                    html+='<div class="pf-dots" id="pf-dots">';
+                    urls.forEach((_,i)=>{html+='<div class="pf-dot'+(i===0?' on':'')+'" onclick="slideTo('+i+')"></div>'});
+                    html+='</div>';
+                }
+            }else{
+                html+='<div class="pf-slider"><div class="pf-slider-empty">'+SAD+'<span>Фото не загрузились</span></div></div>';
+            }
+        }else{
+            html+='<div class="pf-slider"><div class="pf-slider-empty">'+SAD+'<span>Фото пока нет</span></div></div>';
+        }
+
+        html+='<div class="pf-info">';
+        // Название
+        html+='<div class="pf-detail-title">'+(item.title&&item.title.trim()?item.title:'Неизвестно')+'</div>';
+        // Характеристики
+        if(item.specs&&item.specs.trim())html+='<div class="pf-detail-specs">'+item.specs+'</div>';
+        else html+='<div class="pf-detail-specs pf-muted">Характеристики пока не добавлены</div>';
+        // Описание
+        if(item.description&&item.description.trim())html+='<div class="pf-detail-desc">'+item.description+'</div>';
+        // Цена
+        if(item.price_byn>0)html+='<div class="pf-detail-price">'+item.price_byn+' BYN / '+item.price_rub+' RUB</div>';
+        else html+='<div class="pf-detail-price pf-muted">Бесценно!</div>';
+        html+='</div></div>';
+        el.innerHTML=html;
+    }catch(e){el.innerHTML='<div class="empty">'+SAD+'<p>Ошибка</p></div>';}
+}
+
+function slideTo(i){
+    sliderIdx=Math.max(0,Math.min(i,sliderMax));
+    const track=document.getElementById('pf-track');
+    if(track)track.style.transform='translateX(-'+sliderIdx*100+'%)';
+    document.querySelectorAll('#pf-dots .pf-dot').forEach((d,j)=>{
+        d.classList.toggle('on',j===sliderIdx);
+    });
+    if(tg.HapticFeedback)tg.HapticFeedback.selectionChanged();
+}
+
+function tsStart(e){touchStartX=e.touches[0].clientX}
+function tsEnd(e){
+    const dx=e.changedTouches[0].clientX-touchStartX;
+    if(Math.abs(dx)<40)return;
+    if(dx<0&&sliderIdx<sliderMax)slideTo(sliderIdx+1);
+    else if(dx>0&&sliderIdx>0)slideTo(sliderIdx-1);
+}
+
+// ===== ПРОФИЛЬ =====
+async function loadProfile(){
+    const u=tg.initDataUnsafe?.user;if(!u)return;
+    document.getElementById('prof-name').textContent=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Пользователь';
+    document.getElementById('prof-uname').textContent=u.username?'@'+u.username:'';
+    if(u.photo_url)document.getElementById('prof-avatar').innerHTML='<img src="'+u.photo_url+'" alt="">';
+    const el=document.getElementById('prof-orders');el.innerHTML='<p style="text-align:center;color:var(--tg-theme-hint-color)">Загрузка...</p>';
+    try{const r=await fetch('/api/orders/'+u.id);const orders=await r.json();
+    document.getElementById('prof-total').textContent=orders.length;
+    document.getElementById('prof-active').textContent=orders.filter(o=>['pending_payment','pending_quote','payment_confirmed','in_progress'].includes(o.status)).length;
+    document.getElementById('prof-done').textContent=orders.filter(o=>o.status==='completed').length;
+    if(!orders.length){el.innerHTML='<div class="empty">'+SAD+'<p>Заказов пока нет</p></div>';return;}
+    el.innerHTML=orders.map(o=>{const bc={pending_payment:'badge-pending',pending_quote:'badge-quote',payment_confirmed:'badge-confirmed',in_progress:'badge-progress',completed:'badge-done',cancelled:'badge-cancel'}[o.status]||'badge-pending';return'<div class="order-card"><div class="order-left"><span class="order-id">#'+o.id+'</span><span class="order-svc">'+o.service+'</span><span class="order-date">'+o.date+'</span></div><div class="order-right"><span class="badge '+bc+'">'+o.status_text+'</span><div class="order-price">'+(o.price_prefix||'')+o.price_byn+' BYN</div></div></div>'}).join('')}catch(e){el.innerHTML='<p style="color:red">Ошибка</p>'}}
+
+// ===== ЗАКАЗ =====
+function pick(s){ST.svc=s;ST.hasParts=null;if(s==='consultation')go('f-consultation');else if(s==='build')go('f-build-ask');else go('f-upgrade')}
+function buildParts(h){ST.hasParts=h;go(h?'f-build-parts':'f-build-desc')}
+function collectData(){let p=null,d='',h=false;if(ST.svc==='consultation')d=document.getElementById('con-desc').value.trim();else if(ST.svc==='build'){h=ST.hasParts;if(h){p={'Процессор':document.getElementById('b-cpu').value.trim(),'Видеокарта':document.getElementById('b-gpu').value.trim(),'Мат. плата':document.getElementById('b-mb').value.trim(),'RAM':document.getElementById('b-ram').value.trim(),'SSD':document.getElementById('b-stor').value.trim(),'БП':document.getElementById('b-psu').value.trim(),'Корпус':document.getElementById('b-case').value.trim(),'Охлаждение':document.getElementById('b-cool').value.trim()};d=document.getElementById('b-desc').value.trim()}else d=document.getElementById('b-nodesc').value.trim()}else{const c=document.getElementById('u-current').value.trim(),w=document.getElementById('u-want').value.trim();d='';if(c)d+='Текущая конфигурация:\n'+c;if(w)d+=(d?'\n\n':'')+'Что улучшить:\n'+w}return{svc:ST.svc,hasParts:h,parts:p,desc:d}}
+function goToPay(){if(_dl)Telegram.WebApp.openTelegramLink(_dl);Telegram.WebApp.close()}
+async function submit(svc){const bm={consultation:'btn-con',build:ST.hasParts?'btn-build-p':'btn-build-d',upgrade:'btn-upg'}[svc];const btn=document.getElementById(bm);btn.disabled=true;const ot=btn.textContent;btn.textContent='Отправка...';const d=collectData(),u=tg.initDataUnsafe?.user||{};try{const res=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:u.id||0,username:u.username||'',full_name:[u.first_name,u.last_name].filter(Boolean).join(' '),service_type:d.svc,has_parts_list:d.hasParts||false,parts_data:d.parts,description:d.desc})});if(!res.ok)throw new Error((await res.json()).detail||'Ошибка');const r=await res.json();if(tg.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');if(r.needs_quote===true){document.getElementById('okq-id').textContent='Заказ #'+r.id;go('s-okq')}else{document.getElementById('ok-id').textContent='Заказ #'+r.id;_dl='https://t.me/'+r.bot_username+'?start=pay_'+r.id;go('s-ok')}}catch(e){tg.showAlert('Ошибка: '+e.message);btn.disabled=false;btn.textContent=ot}}
+
+tg.BackButton.onClick(()=>{const a=document.querySelector('.scr.on');if(!a)return;go({'f-consultation':'s-main','f-build-ask':'s-main','f-build-parts':'f-build-ask','f-build-desc':'f-build-ask','f-upgrade':'s-main','s-ok':'s-main','s-okq':'s-main','s-pf-detail':'s-portfolio'}[a.id]||'s-main')});
+</script>
+</body>
+</html>
